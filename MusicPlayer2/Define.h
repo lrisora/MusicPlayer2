@@ -38,6 +38,19 @@ using std::map;
 #pragma comment(lib,"tag.lib")
 #endif
 
+#ifndef _M_X64
+#ifdef _DEBUG
+#pragma comment(lib, "../Debug/c4.lib")
+#else
+#pragma comment(lib, "../Release/c4.lib")
+#endif
+#else
+#ifdef _DEBUG
+#pragma comment(lib, "../x64/Debug/c4.lib")
+#else
+#pragma comment(lib, "../x64/Release/c4.lib")
+#endif
+#endif
 
 //如果需要为Windows XP编译，请去掉下面一行代码的注释
 //#define COMPILE_IN_WIN_XP
