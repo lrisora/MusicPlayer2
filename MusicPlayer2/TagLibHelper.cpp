@@ -52,7 +52,8 @@ static wstring TagStringToWstring(const String& str, bool to_local)
 {
     wstring result;
     if (to_local && str.isLatin1())
-        result = CCommon::StrToUnicode(str.to8Bit(), CodeType::ANSI);
+        // result = CCommon::StrToUnicode(str.to8Bit(), CodeType::ANSI);
+        result = CCommon::StrToUnicode(str.to8Bit(), CodeType::GUESS);
     else
         result = str.toWString();
     return result;

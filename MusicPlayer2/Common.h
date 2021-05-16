@@ -41,6 +41,7 @@ enum class CodeType
 	UTF8_NO_BOM,
 	UTF16LE,
 	UTF16BE,
+	GUESS,
 	AUTO
 };
 

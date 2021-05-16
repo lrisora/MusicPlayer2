@@ -4,6 +4,7 @@
 #include "FilePathHelper.h"
 #include <random>
 #include <functional>
+#include "../c4/c4context.h"
 // #include <pathcch.h>
 
 CCommon::CCommon()
@@ -401,6 +402,25 @@ wstring CCommon::StrToUnicode(const string& str, CodeType code_type, bool auto_u
 		convertBEtoLE(p, temp.size() >> 1);
 		result = p;
 		result_ready = true;
+	}
+	// 如果执行到这里说明还无法绝对确定编码
+	else if (code_type == CodeType::GUESS)	// 是否使用getMostPossibleEncode猜测编码
+	{
+		// getMostPossibleEncode方法逐个尝试编码并依据是否出现未定义字符判断编码是否匹配
+		// 使用前需要先处理BOM，匹配则返回，当使用charmap-anisong.xml时顺序为
+		// UTF-8_NO_BOM(<-内置)、(根据配置载入外部映射表->)Shift-JIS、GBK、BIG5，如果都不匹配则返回NULL
+		static CC4Context* m_context = new CC4Context(L"charmap-anisong.xml", L"./charmaps/");
+		if (m_context->init())				// 根据xml配置载入其他字符集映射表，已经成功加载并且未finalize时调用立即返回true
+		{
+			const CC4Encode* const_encode = m_context->getMostPossibleEncode(str);
+			if (const_encode != nullptr)	// 没有匹配编码则不标记result_ready，回落到ANSI
+			{
+				result = const_encode->wconvertText(str.c_str(), str.size());
+				result_ready = true;
+			}
+		}
+		// m_context->finalize();			// 与init相对，卸载载入的外部字符集映射表，复位m_context
+		// delete m_context;
 	}
 
 	// 如果以上均未执行那么按系统ANSI编码处理
