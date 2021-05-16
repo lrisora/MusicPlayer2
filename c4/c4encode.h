@@ -40,7 +40,7 @@ public :
     static const char    LITTLEENDIAN_BOM[2];
     static const char    BIGENDIAN_BOM[2];
     static const char    UTF_8_BOM[3];
-    enum encodeFeature {
+    enum class encodeFeature {
         typeNoFeature      = 0x0000,
         typeBaseOnAnsi     = 0x0001,  /* InputStream: Multibyte encoding. High byte is at first */
         typeBaseOnUnicode  = 0x0002,  /* InputStream: Unicode encoding. Low byte is at first */
@@ -53,24 +53,25 @@ public :
         typeUTF16  = typeBaseOnUnicode|typeFixed|typeResultAnsi|typeInternal,  /* UTF-16 */
         typeUTF8   = typeBaseOnUnicode|typeVariable|typeResultUnicode|typeInternal  /* UTF-8 */
     };
+
     static encodeFeature toEncodeFeature(const char* feature_text)
     {
-        if (NULL == feature_text) return typeNoFeature;
-        if (strcmp("BaseOnMultibyte", feature_text) == 0) return typeBaseOnAnsi;
-        if (strcmp("BaseOnUnicode", feature_text) == 0) return typeBaseOnUnicode;
-        if (strcmp("ResultIsMultibyte", feature_text) == 0) return typeResultAnsi;
-        if (strcmp("ResultIsUnicode", feature_text) == 0) return typeResultUnicode;
-        return typeNoFeature;
+        if (NULL == feature_text)                           return encodeFeature::typeNoFeature;
+        if (strcmp("BaseOnMultibyte"  , feature_text) == 0) return encodeFeature::typeBaseOnAnsi;
+        if (strcmp("BaseOnUnicode"    , feature_text) == 0) return encodeFeature::typeBaseOnUnicode;
+        if (strcmp("ResultIsMultibyte", feature_text) == 0) return encodeFeature::typeResultAnsi;
+        if (strcmp("ResultIsUnicode"  , feature_text) == 0) return encodeFeature::typeResultUnicode;
+        return encodeFeature::typeNoFeature;
     };
     static bool checkFeatureValid(encode_features features)
     {
-        if (((features&typeBaseOnAnsi) != 0) && ((features&typeBaseOnUnicode) != 0))
+        if (((features & (encode_features)encodeFeature::typeBaseOnAnsi) != 0) && ((features & (encode_features)encodeFeature::typeBaseOnUnicode) != 0))
             return false;
-        if (((features&typeFixed) != 0) && ((features&typeVariable) != 0))
+        if (((features & (encode_features)encodeFeature::typeFixed     ) != 0) && ((features & (encode_features)encodeFeature::typeVariable     ) != 0))
             return false;
-        if (((features&typeResultAnsi) != 0) && ((features&typeResultUnicode) != 0))
+        if (((features & (encode_features)encodeFeature::typeResultAnsi) != 0) && ((features & (encode_features)encodeFeature::typeResultUnicode) != 0))
             return false;
-        if (((features&typeExternal) != 0) && ((features&typeInternal) != 0))
+        if (((features & (encode_features)encodeFeature::typeExternal  ) != 0) && ((features & (encode_features)encodeFeature::typeInternal     ) != 0))
             return false;
         return true;
     };

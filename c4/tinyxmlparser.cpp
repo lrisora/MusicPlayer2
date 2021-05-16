@@ -259,7 +259,7 @@ void TiXmlParsingData::Stamp( const char* now, TiXmlEncoding encoding )
 				break;
 
 			case TIXML_UTF_LEAD_0:
-				if ( encoding == TIXML_ENCODING_UTF8 )
+				if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 				{
 					if ( *(p+1) && *(p+2) )
 					{
@@ -283,7 +283,7 @@ void TiXmlParsingData::Stamp( const char* now, TiXmlEncoding encoding )
 				break;
 
 			default:
-				if ( encoding == TIXML_ENCODING_UTF8 )
+				if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 				{
 					// Eat the 1 to 4 byte utf8 character.
 					int step = TiXmlBase::utf8ByteTable[*((const unsigned char*)p)];
@@ -317,7 +317,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 	{
 		return 0;
 	}
-	if ( encoding == TIXML_ENCODING_UTF8 )
+	if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 	{
 		while ( *p )
 		{
@@ -498,7 +498,7 @@ const char* TiXmlBase::GetEntity( const char* p, char* value, int* length, TiXml
 				--q;
 			}
 		}
-		if ( encoding == TIXML_ENCODING_UTF8 )
+		if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 		{
 			// convert the UCS to UTF-8
 			ConvertUTF32ToUTF8( ucs, value, length );
@@ -710,7 +710,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 	// here is skipping white space.
 	if ( !p || !*p )
 	{
-		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -731,7 +731,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 	TiXmlParsingData data( p, TabSize(), location.row, location.col );
 	location = data.Cursor();
 
-	if ( encoding == TIXML_ENCODING_UNKNOWN )
+	if ( encoding == TiXmlEncoding::TIXML_ENCODING_UNKNOWN )
 	{
 		// Check for the Microsoft UTF-8 lead bytes.
 		const unsigned char* pU = (const unsigned char*)p;
@@ -739,7 +739,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 			 && *(pU+1) && *(pU+1) == TIXML_UTF_LEAD_1
 			 && *(pU+2) && *(pU+2) == TIXML_UTF_LEAD_2 )
 		{
-			encoding = TIXML_ENCODING_UTF8;
+			encoding = TiXmlEncoding::TIXML_ENCODING_UTF8;
 			useMicrosoftBOM = true;
 		}
 	}
@@ -747,7 +747,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
     p = SkipWhiteSpace( p, encoding );
 	if ( !p )
 	{
-		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -765,7 +765,7 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 		}
 
 		// Did we get encoding info?
-		if (    encoding == TIXML_ENCODING_UNKNOWN
+		if (    encoding == TiXmlEncoding::TIXML_ENCODING_UNKNOWN
 			 && node->ToDeclaration() )
 		{
 			TiXmlDeclaration* dec = node->ToDeclaration();
@@ -773,13 +773,13 @@ const char* TiXmlDocument::Parse( const char* p, TiXmlParsingData* prevData, TiX
 			assert( enc );
 
 			if ( *enc == 0 )
-				encoding = TIXML_ENCODING_UTF8;
-			else if ( StringEqual( enc, "UTF-8", true, TIXML_ENCODING_UNKNOWN ) )
-				encoding = TIXML_ENCODING_UTF8;
-			else if ( StringEqual( enc, "UTF8", true, TIXML_ENCODING_UNKNOWN ) )
-				encoding = TIXML_ENCODING_UTF8;	// incorrect, but be nice
+				encoding = TiXmlEncoding::TIXML_ENCODING_UTF8;
+			else if ( StringEqual( enc, "UTF-8", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN ) )
+				encoding = TiXmlEncoding::TIXML_ENCODING_UTF8;
+			else if ( StringEqual( enc, "UTF8", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN ) )
+				encoding = TiXmlEncoding::TIXML_ENCODING_UTF8;	// incorrect, but be nice
 			else 
-				encoding = TIXML_ENCODING_LEGACY;
+				encoding = TiXmlEncoding::TIXML_ENCODING_LEGACY;
 		}
 
 		p = SkipWhiteSpace( p, encoding );

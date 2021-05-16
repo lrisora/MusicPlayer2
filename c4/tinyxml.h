@@ -160,14 +160,14 @@ enum
 
 
 // Used by the parsing routines.
-enum TiXmlEncoding
+enum class TiXmlEncoding
 {
 	TIXML_ENCODING_UNKNOWN,
 	TIXML_ENCODING_UTF8,
 	TIXML_ENCODING_LEGACY
 };
 
-const TiXmlEncoding TIXML_DEFAULT_ENCODING = TIXML_ENCODING_UNKNOWN;
+const TiXmlEncoding TIXML_DEFAULT_ENCODING = TiXmlEncoding::TIXML_ENCODING_UNKNOWN;
 
 /** TiXmlBase is a base class for every class in TinyXml.
 	It does little except to establish that TinyXml classes
@@ -327,7 +327,7 @@ protected:
 	inline static const char* GetChar( const char* p, char* _value, int* length, TiXmlEncoding encoding )
 	{
 		assert( p );
-		if ( encoding == TIXML_ENCODING_UTF8 )
+		if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 		{
 			*length = utf8ByteTable[ *((const unsigned char*)p) ];
 			assert( *length >= 0 && *length < 5 );
@@ -381,7 +381,7 @@ protected:
 	static int IsAlphaNum( unsigned char anyByte, TiXmlEncoding encoding );
 	inline static int ToLower( int v, TiXmlEncoding encoding )
 	{
-		if ( encoding == TIXML_ENCODING_UTF8 )
+		if ( encoding == TiXmlEncoding::TIXML_ENCODING_UTF8 )
 		{
 			if ( v < 128 ) return tolower( v );
 			return v;
@@ -459,7 +459,7 @@ public:
 	/** The types of XML nodes supported by TinyXml. (All the
 			unsupported types are picked up by UNKNOWN.)
 	*/
-	enum NodeType
+	enum class NodeType
 	{
 		TINYXML_DOCUMENT,
 		TINYXML_ELEMENT,
@@ -681,7 +681,7 @@ public:
 		The possible types are: TINYXML_DOCUMENT, TINYXML_ELEMENT, TINYXML_COMMENT,
 								TINYXML_UNKNOWN, TINYXML_TEXT, and TINYXML_DECLARATION.
 	*/
-	int Type() const	{ return type; }
+	int Type() const	{ return (int)type; }
 
 	/** Return a pointer to the Document this node lives in.
 		Returns null if not in a document.
@@ -1163,9 +1163,9 @@ class TiXmlComment : public TiXmlNode
 {
 public:
 	/// Constructs an empty comment.
-	TiXmlComment() : TiXmlNode( TiXmlNode::TINYXML_COMMENT ) {}
+	TiXmlComment() : TiXmlNode( TiXmlNode::NodeType::TINYXML_COMMENT ) {}
 	/// Construct a comment from text.
-	TiXmlComment( const char* _value ) : TiXmlNode( TiXmlNode::TINYXML_COMMENT ) {
+	TiXmlComment( const char* _value ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_COMMENT ) {
 		SetValue( _value );
 	}
 	TiXmlComment( const TiXmlComment& );
@@ -1217,7 +1217,7 @@ public:
 		normal, encoded text. If you want it be output as a CDATA text
 		element, set the parameter _cdata to 'true'
 	*/
-	TiXmlText (const char * initValue ) : TiXmlNode (TiXmlNode::TINYXML_TEXT)
+	TiXmlText (const char * initValue ) : TiXmlNode (TiXmlNode::NodeType::TINYXML_TEXT)
 	{
 		SetValue( initValue );
 		cdata = false;
@@ -1233,7 +1233,7 @@ public:
 	}
 	#endif
 
-	TiXmlText( const TiXmlText& copy ) : TiXmlNode( TiXmlNode::TINYXML_TEXT )	{ copy.CopyTo( this ); }
+	TiXmlText( const TiXmlText& copy ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_TEXT )	{ copy.CopyTo( this ); }
 	TiXmlText& operator=( const TiXmlText& base )							 	{ base.CopyTo( this ); return *this; }
 
 	// Write this text object to a FILE stream.
@@ -1286,7 +1286,7 @@ class TiXmlDeclaration : public TiXmlNode
 {
 public:
 	/// Construct an empty declaration.
-	TiXmlDeclaration()   : TiXmlNode( TiXmlNode::TINYXML_DECLARATION ) {}
+	TiXmlDeclaration()   : TiXmlNode( TiXmlNode::NodeType::TINYXML_DECLARATION ) {}
 
 #ifdef TIXML_USE_STL
 	/// Constructor.
@@ -1354,10 +1354,10 @@ private:
 class TiXmlUnknown : public TiXmlNode
 {
 public:
-	TiXmlUnknown() : TiXmlNode( TiXmlNode::TINYXML_UNKNOWN )	{}
+	TiXmlUnknown() : TiXmlNode( TiXmlNode::NodeType::TINYXML_UNKNOWN )	{}
 	virtual ~TiXmlUnknown() {}
 
-	TiXmlUnknown( const TiXmlUnknown& copy ) : TiXmlNode( TiXmlNode::TINYXML_UNKNOWN )		{ copy.CopyTo( this ); }
+	TiXmlUnknown( const TiXmlUnknown& copy ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_UNKNOWN )		{ copy.CopyTo( this ); }
 	TiXmlUnknown& operator=( const TiXmlUnknown& copy )										{ copy.CopyTo( this ); return *this; }
 
 	/// Creates a copy of this Unknown and returns it.

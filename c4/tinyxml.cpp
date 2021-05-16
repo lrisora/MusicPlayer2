@@ -188,11 +188,11 @@ TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 	assert( node->parent == 0 || node->parent == this );
 	assert( node->GetDocument() == 0 || node->GetDocument() == this->GetDocument() );
 
-	if ( node->Type() == TiXmlNode::TINYXML_DOCUMENT )
+	if ( node->Type() == (int)TiXmlNode::NodeType::TINYXML_DOCUMENT )
 	{
 		delete node;
 		if ( GetDocument() ) 
-			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -213,10 +213,10 @@ TiXmlNode* TiXmlNode::LinkEndChild( TiXmlNode* node )
 
 TiXmlNode* TiXmlNode::InsertEndChild( const TiXmlNode& addThis )
 {
-	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
+	if ( addThis.Type() == (int)TiXmlNode::NodeType::TINYXML_DOCUMENT )
 	{
 		if ( GetDocument() ) 
-			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 	TiXmlNode* node = addThis.Clone();
@@ -232,10 +232,10 @@ TiXmlNode* TiXmlNode::InsertBeforeChild( TiXmlNode* beforeThis, const TiXmlNode&
 	if ( !beforeThis || beforeThis->parent != this ) {
 		return 0;
 	}
-	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
+	if ( addThis.Type() == (int)TiXmlNode::NodeType::TINYXML_DOCUMENT )
 	{
 		if ( GetDocument() ) 
-			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -265,10 +265,10 @@ TiXmlNode* TiXmlNode::InsertAfterChild( TiXmlNode* afterThis, const TiXmlNode& a
 	if ( !afterThis || afterThis->parent != this ) {
 		return 0;
 	}
-	if ( addThis.Type() == TiXmlNode::TINYXML_DOCUMENT )
+	if ( addThis.Type() == (int)TiXmlNode::NodeType::TINYXML_DOCUMENT )
 	{
 		if ( GetDocument() ) 
-			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+			GetDocument()->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -305,7 +305,7 @@ TiXmlNode* TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& wit
 		// A document can never be a child.	Thanks to Noam.
 		TiXmlDocument* document = GetDocument();
 		if ( document ) 
-			document->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TIXML_ENCODING_UNKNOWN );
+			document->SetError( TIXML_ERROR_DOCUMENT_TOP_ONLY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return 0;
 	}
 
@@ -523,7 +523,7 @@ const TiXmlDocument* TiXmlNode::GetDocument() const
 
 
 TiXmlElement::TiXmlElement (const char * _value)
-	: TiXmlNode( TiXmlNode::TINYXML_ELEMENT )
+	: TiXmlNode( TiXmlNode::NodeType::TINYXML_ELEMENT )
 {
 	firstChild = lastChild = 0;
 	value = _value;
@@ -541,7 +541,7 @@ TiXmlElement::TiXmlElement( const std::string& _value )
 
 
 TiXmlElement::TiXmlElement( const TiXmlElement& copy)
-	: TiXmlNode( TiXmlNode::TINYXML_ELEMENT )
+	: TiXmlNode( TiXmlNode::NodeType::TINYXML_ELEMENT )
 {
 	firstChild = lastChild = 0;
 	copy.CopyTo( this );	
@@ -687,16 +687,16 @@ int TiXmlElement::QueryBoolAttribute( const char* name, bool* bval ) const
 		return TIXML_NO_ATTRIBUTE;
 	
 	int result = TIXML_WRONG_TYPE;
-	if (    StringEqual( node->Value(), "true", true, TIXML_ENCODING_UNKNOWN ) 
-		 || StringEqual( node->Value(), "yes", true, TIXML_ENCODING_UNKNOWN ) 
-		 || StringEqual( node->Value(), "1", true, TIXML_ENCODING_UNKNOWN ) ) 
+	if (    StringEqual( node->Value(), "true", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN )
+		 || StringEqual( node->Value(), "yes", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN )
+		 || StringEqual( node->Value(), "1", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN ) )
 	{
 		*bval = true;
 		result = TIXML_SUCCESS;
 	}
-	else if (    StringEqual( node->Value(), "false", true, TIXML_ENCODING_UNKNOWN ) 
-			  || StringEqual( node->Value(), "no", true, TIXML_ENCODING_UNKNOWN ) 
-			  || StringEqual( node->Value(), "0", true, TIXML_ENCODING_UNKNOWN ) ) 
+	else if (    StringEqual( node->Value(), "false", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN )
+			  || StringEqual( node->Value(), "no", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN )
+			  || StringEqual( node->Value(), "0", true, TiXmlEncoding::TIXML_ENCODING_UNKNOWN ) )
 	{
 		*bval = false;
 		result = TIXML_SUCCESS;
@@ -910,14 +910,14 @@ const char* TiXmlElement::GetText() const
 }
 
 
-TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::TINYXML_DOCUMENT )
+TiXmlDocument::TiXmlDocument() : TiXmlNode( TiXmlNode::NodeType::TINYXML_DOCUMENT )
 {
 	tabsize = 4;
 	useMicrosoftBOM = false;
 	ClearError();
 }
 
-TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::TINYXML_DOCUMENT )
+TiXmlDocument::TiXmlDocument( const char * documentName ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_DOCUMENT )
 {
 	tabsize = 4;
 	useMicrosoftBOM = false;
@@ -937,7 +937,7 @@ TiXmlDocument::TiXmlDocument( const std::string& documentName ) : TiXmlNode( TiX
 #endif
 
 
-TiXmlDocument::TiXmlDocument( const TiXmlDocument& copy ) : TiXmlNode( TiXmlNode::TINYXML_DOCUMENT )
+TiXmlDocument::TiXmlDocument( const TiXmlDocument& copy ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_DOCUMENT )
 {
 	copy.CopyTo( this );
 }
@@ -978,7 +978,7 @@ bool TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
 	}
 	else
 	{
-		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return false;
 	}
 }
@@ -987,7 +987,7 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 {
 	if ( !file ) 
 	{
-		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return false;
 	}
 
@@ -1004,7 +1004,7 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 	// Strange case, but good to handle up front.
 	if ( length <= 0 )
 	{
-		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_DOCUMENT_EMPTY, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return false;
 	}
 
@@ -1034,7 +1034,7 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 
 	if ( fread( buf, length, 1, file ) != 1 ) {
 		delete [] buf;
-		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TIXML_ENCODING_UNKNOWN );
+		SetError( TIXML_ERROR_OPENING_FILE, 0, 0, TiXmlEncoding::TIXML_ENCODING_UNKNOWN );
 		return false;
 	}
 
@@ -1280,7 +1280,7 @@ double  TiXmlAttribute::DoubleValue() const
 }
 
 
-TiXmlComment::TiXmlComment( const TiXmlComment& copy ) : TiXmlNode( TiXmlNode::TINYXML_COMMENT )
+TiXmlComment::TiXmlComment( const TiXmlComment& copy ) : TiXmlNode( TiXmlNode::NodeType::TINYXML_COMMENT )
 {
 	copy.CopyTo( this );
 }
@@ -1379,7 +1379,7 @@ TiXmlNode* TiXmlText::Clone() const
 TiXmlDeclaration::TiXmlDeclaration( const char * _version,
 									const char * _encoding,
 									const char * _standalone )
-	: TiXmlNode( TiXmlNode::TINYXML_DECLARATION )
+	: TiXmlNode( TiXmlNode::NodeType::TINYXML_DECLARATION )
 {
 	version = _version;
 	encoding = _encoding;
@@ -1401,7 +1401,7 @@ TiXmlDeclaration::TiXmlDeclaration(	const std::string& _version,
 
 
 TiXmlDeclaration::TiXmlDeclaration( const TiXmlDeclaration& copy )
-	: TiXmlNode( TiXmlNode::TINYXML_DECLARATION )
+	: TiXmlNode( TiXmlNode::NodeType::TINYXML_DECLARATION )
 {
 	copy.CopyTo( this );	
 }

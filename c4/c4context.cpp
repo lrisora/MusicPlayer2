@@ -61,7 +61,7 @@ bool CC4Context::init()
 	}
 	
 	file.seekg(0, std::ios::end);
-	unsigned int fileLength = file.tellg();
+	unsigned int fileLength = (unsigned int)file.tellg();
 	char *fileBuffer = new char[fileLength+1];
 	memset((void*)fileBuffer, 0, fileLength+1);
 	file.seekg(0, 0);
@@ -75,7 +75,7 @@ bool CC4Context::init()
 	file.close();
 
 	TiXmlDocument *doc = new TiXmlDocument;
-	doc->Parse(fileBuffer, NULL, TIXML_ENCODING_UTF8);
+	doc->Parse(fileBuffer, NULL, TiXmlEncoding::TIXML_ENCODING_UTF8);
 	if (doc->Error())
 	{
 		delete []fileBuffer;
@@ -174,11 +174,11 @@ bool CC4Context::loadCharmap(const TiXmlElement *charmap_node)
 	mapPath.append(CC4EncodeUTF8::convert2unicode(pElem->GetText(), strlen(pElem->GetText())));
 
 	// feature
-	encode_features features = CC4Encode::typeNoFeature;
+	encode_features features = (encode_features)CC4Encode::encodeFeature::typeNoFeature;
 	for (const TiXmlElement *sub_tag=charmap_node->FirstChildElement("feature"); sub_tag; sub_tag=sub_tag->NextSiblingElement("feature"))
 	{
 		if (!sub_tag->GetText()) continue;
-		features |= CC4Encode::toEncodeFeature(sub_tag->GetText());
+		features |= (encode_features)CC4Encode::toEncodeFeature(sub_tag->GetText());
 	}
 	if (!CC4Encode::checkFeatureValid(features)) return loadCharmapResult;
 
@@ -335,7 +335,7 @@ bool CC4Context::loadCharmap(const TiXmlElement *charmap_node)
 		// reference attribute
 		CC4Segment::segmentRef segment_refType = CC4Segment::toSegmentRef(sub_tag->Attribute("reference"));
 		int segment_offset = -1;
-		if (CC4Segment::refBUFFER == segment_refType)
+		if (CC4Segment::segmentRef::refBUFFER == segment_refType)
 		{
 			// offset attribute
 			if (!sub_tag->Attribute("offset"))
@@ -386,7 +386,7 @@ bool CC4Context::loadCharmap(const TiXmlElement *charmap_node)
 		return loadCharmapResult;
 	}
 	mapFile.seekg(0, std::ios::end);
-	unsigned int mapBufferLength = mapFile.tellg();
+	unsigned int mapBufferLength = (unsigned int)mapFile.tellg();
 	unsigned char *mapBuffer = new unsigned char[mapBufferLength];
 	memset((void*)mapBuffer, 0 ,mapBufferLength);
 	mapFile.seekg(0, 0);
