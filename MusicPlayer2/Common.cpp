@@ -338,7 +338,7 @@ wstring CCommon::StrToUnicode(const string& str, CodeType code_type, bool auto_u
 	// auto_utf8有可能将过短的ANSI误认为是UTF8导致乱码
 	if (str.empty()) return wstring();
 	// code_type为AUTO时从这里开始
-	if (code_type == CodeType::AUTO)	// 先根据BOM判断编码类型
+	if (code_type == CodeType::AUTO || code_type == CodeType::GUESS)	// 先根据BOM判断编码类型
 	{
 		// 如果前面有UTF8的BOM，则编码类型为UTF8
 		if (str.size() >= 3 && str[0] == -17 && str[1] == -69 && str[2] == -65)
