@@ -304,7 +304,7 @@ void CPlayerUIBase::LButtonUp(CPoint point)
                 break;
 
             case BTN_TRANSLATE:
-                m_ui_data.show_translate = !m_ui_data.show_translate;
+                theApp.m_lyric_setting_data.show_translate = !theApp.m_lyric_setting_data.show_translate;
                 return;
 
             case BTN_SKIN:
@@ -1429,7 +1429,7 @@ void CPlayerUIBase::DrawProgess(CRect rect)
 void CPlayerUIBase::DrawTranslateButton(CRect rect)
 {
     m_buttons[BTN_TRANSLATE].enable = CPlayer::GetInstance().m_Lyrics.IsTranslated();
-    DrawTextButton(rect, m_buttons[BTN_TRANSLATE], CCommon::LoadText(IDS_TRAS), m_ui_data.show_translate);
+    DrawTextButton(rect, m_buttons[BTN_TRANSLATE], CCommon::LoadText(IDS_TRAS), theApp.m_lyric_setting_data.show_translate);
 }
 
 int CPlayerUIBase::DrawTopRightIcons(bool always_show_full_screen)
@@ -1698,10 +1698,11 @@ void CPlayerUIBase::DrawTitleBar(CRect rect)
     //绘制标题栏文本
     rect_temp.right = rect_temp.left;
     rect_temp.left = m_layout.titlabar_height;
-    CMusicPlayerDlg* pMainWnd = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
     CString title;
-    pMainWnd->GetWindowText(title);
-    m_draw.DrawWindowText(rect_temp, title.GetString(), m_colors.color_text);
+    theApp.m_pMainWnd->GetWindowText(title);
+    static CDrawCommon::ScrollInfo scroll_info{};
+    m_draw.DrawScrollText(rect_temp, title.GetString(), m_colors.color_text, GetScrollTextPixel(), false, scroll_info);
+    //m_draw.DrawWindowText(rect_temp, title.GetString(), m_colors.color_text);
 }
 
 void CPlayerUIBase::DrawAlbumCover(CRect rect)
