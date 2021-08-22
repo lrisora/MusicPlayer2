@@ -10,6 +10,7 @@
 #include "AudioCommon.h"
 #include "COSUPlayerHelper.h"
 #include "SongDataManager.h"
+#include "SelectItemDlg.h"
 
 CMusicPlayerCmdHelper::CMusicPlayerCmdHelper(CWnd* pOwner)
     : m_pOwner(pOwner)
@@ -109,10 +110,7 @@ bool CMusicPlayerCmdHelper::OnAddToNewPlaylist(std::function<void(std::vector<So
         playlist.SaveToFile(playlist_path);
         theApp.m_pMainWnd->SendMessage(WM_INIT_ADD_TO_MENU);
 
-        if (pPlayerDlg != nullptr && pPlayerDlg->m_pMediaLibDlg != nullptr && IsWindow(pPlayerDlg->m_pMediaLibDlg->GetSafeHwnd()))
-        {
-            pPlayerDlg->m_pMediaLibDlg->m_playlist_dlg.SetUpdateFlag();		//设置数据刷新标志
-        }
+        RefreshMediaTabData(ML_PLAYLIST);
 
         return true;
     }
@@ -201,6 +199,9 @@ bool CMusicPlayerCmdHelper::OnAddToPlaylistCommand(std::function<void(std::vecto
 
 bool CMusicPlayerCmdHelper::DeleteSongsFromDisk(const std::vector<SongInfo>& files)
 {
+    if (theApp.m_media_lib_setting_data.disable_delete_from_disk)
+        return false;
+
     CString info = CCommon::LoadTextFormat(IDS_DELETE_FILE_INQUARY, { files.size() });
     if (GetOwner()->MessageBox(info, NULL, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
         return false;
@@ -467,7 +468,7 @@ std::wstring CMusicPlayerCmdHelper::SearchAlbumCover(const SongInfo& song)
     return album_cover_path;
 }
 
-void CMusicPlayerCmdHelper::OnRating(const wstring& file_path, DWORD command)
+bool CMusicPlayerCmdHelper::OnRating(const wstring& file_path, DWORD command)
 {
     if (command - ID_RATING_1 <= 5)     //如果命令是歌曲分级（应确保分级命令的ID是连续的）
     {
@@ -475,10 +476,17 @@ void CMusicPlayerCmdHelper::OnRating(const wstring& file_path, DWORD command)
         SongInfo song = CSongDataManager::GetInstance().GetSongInfo(file_path);
         song.rating = static_cast<BYTE>(rating);
         CAudioTag audio_tag(song);
-        audio_tag.WriteAudioRating();
+        bool succeed{ audio_tag.WriteAudioRating() };
+        if (!CAudioTag::IsFileRatingSupport(CFilePathHelper(file_path).GetFileExtension()))
+            succeed = true;     //如果文件格式不支持写入分级，也返回true
+        //if (succeed)
+        //{
         CSongDataManager::GetInstance().AddItem(file_path, song);
         CSongDataManager::GetInstance().SetSongDataModified();
+        //}
+        return succeed;
     }
+    return true;
 }
 
 int CMusicPlayerCmdHelper::UpdateMediaLib(bool refresh)
@@ -594,6 +602,61 @@ void CMusicPlayerCmdHelper::ShowMediaLib(int cur_tab /*= -1*/, int tab_force_sho
         pPlayerDlg->m_pMediaLibDlg->SetTabForceShow(tab_force_show);
         pPlayerDlg->m_pMediaLibDlg->Create(IDD_MEDIA_LIB_DIALOG/*, GetDesktopWindow()*/);
         pPlayerDlg->m_pMediaLibDlg->ShowWindow(SW_SHOW);
+    }
+}
+
+void CMusicPlayerCmdHelper::RefreshMediaTabData(enum eMediaLibTab tab_index)
+{
+    CMusicPlayerDlg* pPlayerDlg = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
+    if (pPlayerDlg != nullptr && pPlayerDlg->m_pMediaLibDlg != nullptr && IsWindow(pPlayerDlg->m_pMediaLibDlg->GetSafeHwnd()))
+    {
+        if (tab_index == ML_FOLDER)
+            pPlayerDlg->m_pMediaLibDlg->m_path_dlg.RefreshTabData();         // 刷新媒体库文件夹列表
+        else if(tab_index == ML_PLAYLIST)
+            pPlayerDlg->m_pMediaLibDlg->m_playlist_dlg.RefreshSongList();    // 刷新媒体库播放列表列表
+    }
+}
+
+void CMusicPlayerCmdHelper::OnViewArtist(const SongInfo& song_info)
+{
+    vector<wstring> artist_list;
+    song_info.GetArtistList(artist_list);     //获取艺术家（可能有多个）
+    wstring artist;
+    if (artist_list.empty())
+    {
+        return;
+    }
+    else if (artist_list.size() == 1)
+    {
+        artist = artist_list.front();
+    }
+    else
+    {
+        //如果有多个艺术家，弹出“选择艺术家”对话框
+        CSelectItemDlg dlg(artist_list);
+        dlg.SetTitle(CCommon::LoadText(IDS_SELECT_ARTIST));
+        dlg.SetDlgIcon(theApp.m_icon_set.artist.GetIcon());
+        if (dlg.DoModal() == IDOK)
+            artist = dlg.GetSelectedItem();
+        else
+            return;
+    }
+    ShowMediaLib(CMusicPlayerCmdHelper::ML_ARTIST, MLDI_ARTIST);
+    CMusicPlayerDlg* pPlayerDlg = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
+    if (!pPlayerDlg->m_pMediaLibDlg->NavigateToItem(artist))
+    {
+        pPlayerDlg->MessageBox(CCommon::LoadTextFormat(IDS_CONNOT_FIND_ARTIST_WARNING, { artist }), NULL, MB_OK | MB_ICONWARNING);
+    }
+}
+
+void CMusicPlayerCmdHelper::OnViewAlbum(const SongInfo& song_info)
+{
+    wstring album = song_info.GetAlbum();
+    ShowMediaLib(CMusicPlayerCmdHelper::ML_ALBUM, MLDI_ALBUM);
+    CMusicPlayerDlg* pPlayerDlg = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
+    if (!pPlayerDlg->m_pMediaLibDlg->NavigateToItem(album))
+    {
+        pPlayerDlg->MessageBox(CCommon::LoadTextFormat(IDS_CONNOT_FIND_ALBUM_WARNING, { album }), NULL, MB_OK | MB_ICONWARNING);
     }
 }
 

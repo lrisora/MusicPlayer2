@@ -31,6 +31,7 @@
 #include "DesktopLyric.h"
 #include "SearchEditCtrl.h"
 #include "UIWindow.h"
+#include "CDevicesManager.h"
 
 #define WM_ALBUM_COVER_DOWNLOAD_COMPLETE (WM_USER+114)		//自动下载专辑封面和歌词完成时发出的消息
 
@@ -135,8 +136,8 @@ protected:
         bool ui_thread_exit{ false };           //指示线程退出
         bool ui_force_refresh{ false };         //指示主界面强制重绘
         bool search_box_force_refresh{ false }; //指示搜索框界面强制重绘
-        bool is_active_window{ false };     //指示当前窗口是否为激活窗口
-        bool is_active_window_maxmize{ false };     //指示激活的窗口是否最大化
+        bool is_active_window{ false };         //指示当前窗口是否为激活窗口
+        bool is_completely_covered{ false };    //指示当前激活的窗口是否完全覆盖主界面
     };
     UIThreadPara m_ui_thread_para{};
 
@@ -150,6 +151,8 @@ protected:
     bool m_ignore_color_change{ false };    //当它为true时，不响应颜色变化，防止短时间内重复收到主题颜色变化的消息
     enum { DELAY_TIMER_ID = 1200, INGORE_COLOR_CHANGE_TIMER_ID = 1201 };
 
+    CDevicesManager* devicesManager;
+
 private:
     void SaveConfig();		//保存设置到ini文件
     void LoadConfig();		//从ini文件读取设置
@@ -160,7 +163,7 @@ private:
     void SetDrawAreaSize(int cx, int cy);
     void SetAlwaysOnTop();
 
-    bool IsAddCurrentToPlaylist() const;      //当执行“添加到播放列表时”，是添加正在播放的曲目到播放列表，还是添加选中的曲目到播放列表
+    bool IsMainWindowPopupMenu() const;      //当前弹出的右键是主窗口右键菜单还是播放列表右键菜单
 
     static int CalculatePlaylistWidth(int client_width);
 
@@ -191,6 +194,7 @@ protected:
     void ShowFloatPlaylist();
     void HideFloatPlaylist();
 
+    void GetPlaylistItemSelected(int cur_index);
     void GetPlaylistItemSelected();
     void IniPlaylistPopupMenu();        //初始化所有右键菜单中的“添加到播放列表”子菜单
     void InitUiMenu();                  //初始化所有“切换界面”子菜单
@@ -389,6 +393,7 @@ public:
     afx_msg void OnCloseDesktopLyric();
     afx_msg void OnLyricDisplayedDoubleLine();
     afx_msg void OnLyricBackgroundPenetrate();
+    afx_msg void OnPlaylistSelectChange();
     afx_msg void OnPlaylistSelectAll();
     afx_msg void OnPlaylistSelectNone();
     afx_msg void OnPlaylistSelectRevert();
@@ -442,7 +447,6 @@ public:
     afx_msg void OnDesendingOrder();
     afx_msg void OnInvertPlaylist();
     afx_msg void OnPlayRandom();
-    afx_msg BOOL OnDeviceChange(UINT nEventType, DWORD_PTR dwData);
 protected:
     afx_msg LRESULT OnCurrentFileAlbumCoverChanged(WPARAM wParam, LPARAM lParam);
 public:
@@ -458,4 +462,12 @@ public:
     afx_msg void OnViewAlbum();
     afx_msg void OnLocateToCurrent();
     afx_msg void OnUseStandardTitleBar();
+protected:
+    afx_msg LRESULT OnDefaultMultimediaDeviceChanged(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDisplaychange(WPARAM wParam, LPARAM lParam);
+public:
+    afx_msg void OnWindowPosChanging(WINDOWPOS* lpwndpos);
+    afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+    afx_msg void OnPlaylistViewArtist();
+    afx_msg void OnPlaylistViewAlbum();
 };

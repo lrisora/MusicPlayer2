@@ -58,6 +58,7 @@ void CLyricSettingsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_SHOW_DEFAULT_ALBUM_ICON_CHK, m_show_default_album_icon_chk);
     DDX_Control(pDX, IDC_FONT_SIZE_EDIT2, m_lyric_line_space_edit);
     DDX_Control(pDX, IDC_ALIGNMENT_COMBO2, m_lyric_alignment_combo);
+    DDX_Control(pDX, IDC_DESKTOP_LYRIC_ALIGNMENT_COMBO, m_desktop_lyric_alignment_combo);
 }
 
 
@@ -106,6 +107,7 @@ BEGIN_MESSAGE_MAP(CLyricSettingsDlg, CTabDlg)
     ON_BN_CLICKED(IDC_SEARCH_BOX_TRANSPARENT_IN_WHITE_MODE, &CLyricSettingsDlg::OnBnClickedSearchBoxTransparentInWhiteMode)
     ON_BN_CLICKED(IDC_SET_FONT_BUTTON, &CLyricSettingsDlg::OnBnClickedSetFontButton)
     ON_CBN_SELCHANGE(IDC_ALIGNMENT_COMBO2, &CLyricSettingsDlg::OnCbnSelchangeAlignmentCombo2)
+    ON_CBN_SELCHANGE(IDC_DESKTOP_LYRIC_ALIGNMENT_COMBO, &CLyricSettingsDlg::OnCbnSelchangeDesktopLyricAlignmentCombo)
 END_MESSAGE_MAP()
 
 
@@ -171,6 +173,11 @@ BOOL CLyricSettingsDlg::OnInitDialog()
     m_desktop_lyric_opacity_sld.SetRange(20, 100);
     m_desktop_lyric_opacity_sld.SetPos(m_data.desktop_lyric_data.opacity);
 
+    m_desktop_lyric_alignment_combo.AddString(CCommon::LoadText(IDS_ALIGN_LEFT));
+    m_desktop_lyric_alignment_combo.AddString(CCommon::LoadText(IDS_ALIGN_RIGHT));
+    m_desktop_lyric_alignment_combo.AddString(CCommon::LoadText(IDS_CENTER));
+    m_desktop_lyric_alignment_combo.SetCurSel(static_cast<int>(m_data.desktop_lyric_data.lyric_align));
+
     CString str;
     str.Format(_T("%d%%"), m_data.desktop_lyric_data.opacity);
     SetDlgItemText(IDC_LYRIC_OPACITY_STATIC, str);
@@ -201,8 +208,8 @@ BOOL CLyricSettingsDlg::OnInitDialog()
     m_tool_tip.SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 
     m_cortana_color_combo.AddString(CCommon::LoadText(IDS_FOLLOWING_SYSTEM));
-    m_cortana_color_combo.AddString(CCommon::LoadText(IDS_BLACK));
-    m_cortana_color_combo.AddString(CCommon::LoadText(IDS_WHITE));
+    m_cortana_color_combo.AddString(CCommon::LoadText(IDS_DARK));
+    m_cortana_color_combo.AddString(CCommon::LoadText(IDS_LIGHT));
     m_cortana_color_combo.SetCurSel(m_data.cortana_color);
 
     m_alignment_combo.AddString(CCommon::LoadText(IDS_ALIGN_LEFT));
@@ -219,6 +226,7 @@ BOOL CLyricSettingsDlg::OnInitDialog()
     m_desktop_lyric_opacity_sld.SetMouseWheelEnable(false);
     m_lyric_alignment_combo.SetMouseWheelEnable(false);
     m_lyric_line_space_edit.SetMouseWheelEnable(false);
+    m_desktop_lyric_alignment_combo.SetMouseWheelEnable(false);
 
     return TRUE;  // return TRUE unless you set the focus to a control
                   // 异常: OCX 属性页应返回 FALSE
@@ -739,4 +747,11 @@ void CLyricSettingsDlg::OnCbnSelchangeAlignmentCombo2()
 {
     // TODO: 在此添加控件通知处理程序代码
     m_data.lyric_align = static_cast<Alignment>(m_lyric_alignment_combo.GetCurSel());
+}
+
+
+void CLyricSettingsDlg::OnCbnSelchangeDesktopLyricAlignmentCombo()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    m_data.desktop_lyric_data.lyric_align = static_cast<Alignment>(m_desktop_lyric_alignment_combo.GetCurSel());
 }

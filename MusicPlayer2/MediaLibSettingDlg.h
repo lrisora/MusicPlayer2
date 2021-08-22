@@ -59,4 +59,6 @@ public:
     virtual void OnOK();
     afx_msg void OnCbnSelchangeId3v2TypeCombo();
     afx_msg void OnBnClickedRefreshMediaLibButton();
+    afx_msg void OnBnClickedDisableDeleteFromDiskCheck();
+    afx_msg void OnBnClickedShowPlaylistTooltipCheck();
 };

@@ -156,12 +156,12 @@ void CPlayerUI2::_DrawInfo(CRect draw_rect, bool reset)
         rc_tmp.MoveToXY(EdgeMargin(true), info_rect.bottom - bottom_height);
         rc_tmp.right = info_rect.right - EdgeMargin(true);
         rc_tmp.bottom = rc_tmp.top + text_height2;
-        m_draw.SetFont(&theApp.m_font_set.title.GetFont(theApp.m_ui_data.full_screen));
+        m_draw.SetFont(&theApp.m_font_set.font10.GetFont(theApp.m_ui_data.full_screen));
         static CDrawCommon::ScrollInfo scroll_info_title;
         m_draw.DrawScrollText(rc_tmp, CPlayer::GetInstance().GetCurrentSongInfo().GetTitle().c_str(), m_colors.color_text, GetScrollTextPixel(true), true, scroll_info_title, reset);
 
         rc_tmp.MoveToY(rc_tmp.bottom);
-        m_draw.SetFont(&theApp.m_font_set.normal.GetFont(theApp.m_ui_data.full_screen));
+        m_draw.SetFont(&theApp.m_font_set.font9.GetFont(theApp.m_ui_data.full_screen));
         static CDrawCommon::ScrollInfo scroll_info_artist;
         m_draw.DrawScrollText(rc_tmp, CPlayer::GetInstance().GetCurrentSongInfo().GetArtist().c_str(), m_colors.color_text, GetScrollTextPixel(true), true, scroll_info_artist, reset);
 
@@ -207,15 +207,7 @@ void CPlayerUI2::_DrawInfo(CRect draw_rect, bool reset)
         rc_tmp.DeflateRect(lyric_margin, lyric_margin);
         if (rc_tmp.bottom > rc_tmp.top + m_draw.GetLyricTextHeight() / 2)
         {
-            if (theApp.m_app_setting_data.lyric_background)
-            {
-                if (IsDrawBackgroundAlpha())
-                    m_draw.FillAlphaRect(background_rect, m_colors.color_lyric_back, ALPHA_CHG(theApp.m_app_setting_data.background_transparency) * 3 / 5);
-                else
-                    m_draw.FillRect(background_rect, m_colors.color_lyric_back);
-            }
-
-            m_draw.DrawLryicCommon(rc_tmp, theApp.m_lyric_setting_data.lyric_align);
+            DrawLyrics(background_rect, lyric_margin);
         }
 
         //绘制音量调整按钮
@@ -290,12 +282,12 @@ void CPlayerUI2::_DrawInfo(CRect draw_rect, bool reset)
         rc_tmp.MoveToXY(cover_side + EdgeMargin(true) + Margin(), rc_tmp.bottom + DPI(4));
         rc_tmp.right = info_rect.right - EdgeMargin(true) - top_right_icon_size;
         rc_tmp.bottom = rc_tmp.top + text_height2;
-        m_draw.SetFont(&theApp.m_font_set.title.GetFont(theApp.m_ui_data.full_screen));
+        m_draw.SetFont(&theApp.m_font_set.font10.GetFont(theApp.m_ui_data.full_screen));
         static CDrawCommon::ScrollInfo scroll_info_title;
         m_draw.DrawScrollText(rc_tmp, CPlayer::GetInstance().GetCurrentSongInfo().GetTitle().c_str(), m_colors.color_text, GetScrollTextPixel(true), true, scroll_info_title, reset);
 
         rc_tmp.MoveToY(rc_tmp.bottom);
-        m_draw.SetFont(&theApp.m_font_set.normal.GetFont(theApp.m_ui_data.full_screen));
+        m_draw.SetFont(&theApp.m_font_set.font9.GetFont(theApp.m_ui_data.full_screen));
         static CDrawCommon::ScrollInfo scroll_info_artist;
         m_draw.DrawScrollText(rc_tmp, CPlayer::GetInstance().GetCurrentSongInfo().GetArtist().c_str(), m_colors.color_text, GetScrollTextPixel(true), true, scroll_info_artist, reset);
 
@@ -309,16 +301,18 @@ void CPlayerUI2::_DrawInfo(CRect draw_rect, bool reset)
         rc_tmp.bottom = start_point.y + cover_side + EdgeMargin(false);
 
         //绘制歌词
-        if (theApp.m_app_setting_data.lyric_background)
-        {
-            if (IsDrawBackgroundAlpha())
-                m_draw.FillAlphaRect(rc_tmp, m_colors.color_lyric_back, ALPHA_CHG(theApp.m_app_setting_data.background_transparency) * 3 / 5);
-            else
-                m_draw.FillRect(rc_tmp, m_colors.color_lyric_back);
-        }
+        //if (theApp.m_app_setting_data.lyric_background)
+        //{
+        //    if (IsDrawBackgroundAlpha())
+        //        m_draw.FillAlphaRect(rc_tmp, m_colors.color_lyric_back, ALPHA_CHG(theApp.m_app_setting_data.background_transparency) * 3 / 5);
+        //    else
+        //        m_draw.FillRect(rc_tmp, m_colors.color_lyric_back);
+        //}
+        //m_draw_data.lyric_rect = rc_tmp;
+        //rc_tmp.DeflateRect(Margin(), m_layout.margin);
+        //m_draw.DrawLryicCommon(rc_tmp, theApp.m_lyric_setting_data.lyric_align);
         m_draw_data.lyric_rect = rc_tmp;
-        rc_tmp.DeflateRect(Margin(), m_layout.margin);
-        m_draw.DrawLryicCommon(rc_tmp, theApp.m_lyric_setting_data.lyric_align);
+        DrawLyrics(rc_tmp);
 
         //绘制音量调整按钮
         DrawVolumnAdjBtn();

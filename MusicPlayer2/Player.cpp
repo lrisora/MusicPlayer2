@@ -217,9 +217,13 @@ UINT CPlayer::IniPlaylistThreadFunc(LPVOID lpParam)
 
 void CPlayer::IniPlaylistComplate()
 {
-	CAudioCommon::GetCueTracks(m_playlist, m_pCore);
 	//m_song_num = m_playlist.size();
 	m_index = m_index_tmp;
+    CAudioCommon::GetCueTracks(m_playlist, m_pCore, m_index_tmp);
+	// 如果是播放列表模式则m_index_tmp可能在cue解析后变化，需更新(文件夹模式下m_index_tmp会得到错误结果)
+	if (m_playlist_mode)
+		m_index = m_index_tmp;
+
 	if (m_index < 0 || m_index >= GetSongNum()) m_index = 0;		//确保当前歌曲序号不会超过歌曲总数
 	//统计列表总时长
 	m_total_time = 0;
@@ -306,6 +310,7 @@ void CPlayer::IniPlaylistComplate()
 	//if(!sort)		//如果文件是通过命令行参数打开的，则sort会为false，此时打开后直接播放
 	//    MusicControl(Command::PLAY);
 
+	SaveCurrentPlaylist();
 	EmplaceCurrentPathToRecent();
 	EmplaceCurrentPlaylistToRecent();
 	SetTitle();
@@ -2214,18 +2219,18 @@ void CPlayer::SaveCurrentPlaylist()
 {
 	if (m_playlist_mode)
 	{
-		wstring current_playlist;
-		if (m_recent_playlist.m_cur_playlist_type == PT_DEFAULT || m_recent_playlist.m_recent_playlists.empty())
-			current_playlist = m_recent_playlist.m_default_playlist.path;
-		else if (m_recent_playlist.m_cur_playlist_type == PT_FAVOURITE)
-			current_playlist = m_recent_playlist.m_favourite_playlist.path;
-		else if (m_recent_playlist.m_cur_playlist_type == PT_TEMP)
-			current_playlist = m_recent_playlist.m_temp_playlist.path;
-		else
-			current_playlist = m_recent_playlist.m_recent_playlists.front().path;
+		//wstring current_playlist;
+		//if (m_recent_playlist.m_cur_playlist_type == PT_DEFAULT || m_recent_playlist.m_recent_playlists.empty())
+		//	current_playlist = m_recent_playlist.m_default_playlist.path;
+		//else if (m_recent_playlist.m_cur_playlist_type == PT_FAVOURITE)
+		//	current_playlist = m_recent_playlist.m_favourite_playlist.path;
+		//else if (m_recent_playlist.m_cur_playlist_type == PT_TEMP)
+		//	current_playlist = m_recent_playlist.m_temp_playlist.path;
+		//else
+		//	current_playlist = m_recent_playlist.m_recent_playlists.front().path;
 		CPlaylistFile playlist;
 		playlist.FromSongList(m_playlist);
-		playlist.SaveToFile(current_playlist);
+		playlist.SaveToFile(m_playlist_path);
 	}
 }
 

@@ -40,6 +40,7 @@ END_MESSAGE_MAP()
 void CUIWindow::OnLButtonUp(UINT nFlags, CPoint point)
 {
     // TODO: 在此添加消息处理程序代码和/或调用默认值
+    m_bTitlebarLButtonDown = false; // 此次仅为点击不是拖动
 
     CMusicPlayerDlg* pMainWindow = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
     auto pUi = pMainWindow->GetCurrentUi();
@@ -69,7 +70,12 @@ void CUIWindow::OnLButtonDown(UINT nFlags, CPoint point)
     CMusicPlayerDlg* pMainWindow = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
     auto pUi = pMainWindow->GetCurrentUi();
     if (pUi->PointInTitlebarArea(point) && !pUi->PointInControlArea(point) && !pUi->PointInAppIconArea(point))        //如果鼠标按下的地方是绘制的标题栏区域，并且不是按钮，则拖动窗口
-        pMainWindow->PostMessage(WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(point.x, point.y));
+    {
+        if(pMainWindow->IsZoomed())     // 最大化窗口需要先退出最大化再拖动，按下不做反应仅记录，如果鼠标移动再处理
+            m_bTitlebarLButtonDown = true, GetCursorPos(&m_ptLButtonDown);
+        else
+            pMainWindow->SendMessage(WM_SYSCOMMAND, SC_MOVE | HTCAPTION);
+    }
 
     m_pUI->LButtonDown(point);
 
@@ -85,6 +91,13 @@ void CUIWindow::OnLButtonDblClk(UINT nFlags, CPoint point)
     if (pUi->PointInAppIconArea(point))
     {
         pMainWindow->SendMessage(WM_CLOSE);
+    }
+    else if (pUi->PointInTitlebarArea(point) && !pUi->PointInControlArea(point))
+    {
+        if(pMainWindow->IsZoomed())
+            pMainWindow->SendMessage(WM_SYSCOMMAND, SC_RESTORE);
+        else
+            pMainWindow->SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE);
     }
 
     CStatic::OnLButtonDblClk(nFlags, point);
@@ -102,6 +115,29 @@ void CUIWindow::OnLButtonDblClk(UINT nFlags, CPoint point)
 void CUIWindow::OnMouseMove(UINT nFlags, CPoint point)
 {
     // TODO: 在此添加消息处理程序代码和/或调用默认值
+
+    // 此处处理最大化窗口的自绘标题栏拖动，需要先设置窗口尺寸退出最大化，移动窗口到适当位置之后进入拖动
+    if (m_bTitlebarLButtonDown)
+    {
+        m_bTitlebarLButtonDown = false;
+        CMusicPlayerDlg* pMainWindow = dynamic_cast<CMusicPlayerDlg*>(theApp.m_pMainWnd);
+        // 以下处理为屏幕坐标
+        CRect rect_max;
+        pMainWindow->GetWindowRect(rect_max);                   // 获取最大化窗口位置信息
+        pMainWindow->SendMessage(WM_SYSCOMMAND, SC_RESTORE);
+        CRect rect;
+        pMainWindow->GetWindowRect(rect);                       // 获取还原后窗口位置信息
+
+        CPoint offset{ m_ptLButtonDown - rect_max.TopLeft() };  // 最大化时从窗口原点指向点击位置的向量
+        if (theApp.m_ui_data.show_playlist)                     // 将此向量映射为窗口大小还原后的对应向量（忽略边框大小）
+            offset.x *= (float)(rect.Width() / 2 - theApp.DPI(30) * 6) / (rect_max.Width() / 2 - theApp.DPI(30) * 6);
+        else
+            offset.x *= (float)(rect.Width() - theApp.DPI(30) * 6) / (rect_max.Width() - theApp.DPI(30) * 6);
+        offset = m_ptLButtonDown - rect.TopLeft() - offset;     // 计算所需偏移量
+        pMainWindow->MoveWindow(rect + offset);
+        pMainWindow->SendMessage(WM_SYSCOMMAND, SC_MOVE | HTCAPTION);
+    }
+
     m_pUI->MouseMove(point);
 
     CStatic::OnMouseMove(nFlags, point);

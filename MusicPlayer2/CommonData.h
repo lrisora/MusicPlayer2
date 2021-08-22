@@ -121,10 +121,10 @@ public:
 
 struct FontSet
 {
-    UIFont normal;				//普通的字体
-    UIFont time;				//显示播放时间
-    UIFont title;				//界面2的歌曲标题
-    UIFont ui4_title;           //界面4的歌曲标题
+    UIFont font9;				//普通的字体
+    UIFont font8;				//显示播放时间
+    UIFont font10;				//界面2的歌曲标题
+    UIFont font12;           //界面4的歌曲标题
 
     UIFont lyric;				//歌词字体
     UIFont lyric_translate;		//歌词翻译的字体
@@ -134,10 +134,10 @@ struct FontSet
 
     void Init()
     {
-        normal.SetFont(9, CCommon::LoadText(IDS_DEFAULT_FONT));
-        time.SetFont(8, CCommon::LoadText(IDS_DEFAULT_FONT));
-        title.SetFont(10, CCommon::LoadText(IDS_DEFAULT_FONT));
-        ui4_title.SetFont(12, CCommon::LoadText(IDS_DEFAULT_FONT));
+        font9.SetFont(9, CCommon::LoadText(IDS_DEFAULT_FONT));
+        font8.SetFont(8, CCommon::LoadText(IDS_DEFAULT_FONT));
+        font10.SetFont(10, CCommon::LoadText(IDS_DEFAULT_FONT));
+        font12.SetFont(12, CCommon::LoadText(IDS_DEFAULT_FONT));
     }
 };
 
@@ -182,6 +182,7 @@ struct DesktopLyricSettingData		//桌面歌词设置
     bool hide_lyric_window_when_paused{ false };	//暂停时隐藏歌词窗口
     bool lyric_background_penetrate{ false };
     bool show_unlock_when_locked{ true };           //桌面歌词锁定时显示解锁图标
+    Alignment lyric_align{ Alignment::CENTER }; //歌词的对齐方式
 };
 
 struct LyricSettingData
@@ -272,6 +273,7 @@ struct GeneralSettingData
     bool auto_download_only_tag_full{ true };	//仅在歌曲信息完整时自动下载
     bool save_lyric_to_song_folder{ true };     //将歌词文件保存在歌曲文件夹
     bool check_update_when_start{ true };		//是否在程序启动时检查更新
+    int update_source{};                        //更新源。0: GitHub; 1: Gitee
     wstring sf2_path;							//MIDI音色库路径
     bool midi_use_inner_lyric{ false };			//播放MIDI音乐时显示内嵌歌词
     bool minimize_to_notify_icon{ false };		//是否最小到通知区图标
@@ -283,6 +285,7 @@ struct PlaySettingData
 {
     bool stop_when_error{ true };				//出现错误时停止播放
     bool auto_play_when_start{ false };			//程序启动时自动播放
+    bool continue_when_switch_playlist{ false };//若当前播放歌曲存在于切换到的播放列表则保持播放状态不变
     bool show_taskbar_progress{ false };		//在任务栏按钮上显示播放进度
     bool show_playstate_icon{ true };			//在任务栏按钮上显示播放状态的角标
     wstring output_device;						//播放设备的名称
@@ -317,11 +320,13 @@ struct MediaLibSettingData
 {
     vector<wstring> media_folders;      //媒体库文件夹浏览中显示的文件夹
     bool hide_only_one_classification;  //媒体库中将只有一项的分类归到其他类中
+    bool disable_delete_from_disk;      //禁用从磁盘删除
     bool show_tree_tool_tips;           //树控件显示鼠标提示
     bool update_media_lib_when_start_up;    //启动时自动更新媒体库
     bool disable_drag_sort;				//禁止通过拖放排序
     DisplayFormat display_format{};		//播放列表中项目的显示样式
     bool ignore_songs_already_in_playlist{ true };  //向播放列表中添加曲目时忽略已存在的曲目
+    bool show_playlist_tooltip;         //显示播放列表工具提示
     RecentPlayedRange recent_played_range{};	//最近播放曲目列表的显示范围
     int display_item{};                 //媒体库显示的项目
     bool write_id3_v2_3{ false };       //写入的ID3V2版本是否为2.3，否则为2.4

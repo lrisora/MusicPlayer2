@@ -21,11 +21,11 @@ CLyricsWindow::CLyricsWindow()
 	m_pTextPen=NULL ; //普通歌词边框画笔
 	m_HighlightGradientMode=LyricsGradientMode_Two ; //高亮歌词渐变模式
 	m_pHighlightPen=NULL ; //高亮歌词边框画笔
-	m_pShadowBrush=NULL ; //阴影画刷,GDIPlus画刷 
+	m_pShadowBrush=NULL ; //阴影画刷,GDIPlus画刷
 	m_nShadowOffset=1 ; //阴影偏移
 	m_pFont=NULL ; //GDIPlus字体
-	m_FontStyle=NULL ; 
-	m_FontSize=NULL ; 
+	m_FontStyle=NULL ;
+	m_FontSize=NULL ;
 	m_pTextFormat=NULL;
 	//---------------------------------
 	m_pFontFamily=new Gdiplus::FontFamily();
@@ -40,7 +40,7 @@ CLyricsWindow::CLyricsWindow()
 	SetLyricsShadow(Gdiplus::Color(150,0,0,0),1);
 	//SetHighlightColor(Gdiplus::Color(255,100,26),Gdiplus::Color(255,255,0),LyricsGradientMode_Three);
 	//SetHighlightBorder(Gdiplus::Color::Black,1);
-	
+
 }
 
 CLyricsWindow::~CLyricsWindow()
@@ -60,11 +60,11 @@ CLyricsWindow::~CLyricsWindow()
 	if(m_pFontFamily){
 		delete m_pFontFamily;
 		m_pFontFamily=NULL;
-	}	
+	}
 	if(m_pTextFormat){
 		delete m_pTextFormat;
 		m_pTextFormat=NULL;
-	}	
+	}
 	if(m_pFont){
 		delete m_pFont;
 		m_pFont=NULL;
@@ -297,27 +297,53 @@ void CLyricsWindow::DrawLyrics(Gdiplus::Graphics* pGraphics)
 	Gdiplus::RectF layoutRect(0,0,0,0);
 	Gdiplus::RectF boundingBox;
 	pGraphics->MeasureString (m_lpszLyrics, -1, m_pFont,layoutRect, m_pTextFormat,&boundingBox, 0, 0);
+    boundingBox.Width += 1;     //测量到的文本宽度加1，以防止出现使用某些字体时，最后一个字符无法显示的问题
 	//计算歌词画出的位置
 	Gdiplus::RectF dstRect;		//文字的矩形
 	Gdiplus::RectF transRect;	//翻译文本的矩形
     bool bDrawTranslate = m_bShowTranslate && !m_strTranslate.IsEmpty();
 	if(!bDrawTranslate)
 	{
-		dstRect = Gdiplus::RectF((m_nWidth - boundingBox.Width) / 2, m_toobar_height + (lyricHeight - boundingBox.Height) / 2, boundingBox.Width, boundingBox.Height);
-	}
+        switch (m_alignment)
+        {
+        case Alignment::LEFT:
+            dstRect = Gdiplus::RectF(0, m_toobar_height + (lyricHeight - boundingBox.Height) / 2, boundingBox.Width, boundingBox.Height);
+            break;
+        case Alignment::RIGHT:
+            dstRect = Gdiplus::RectF(m_nWidth - boundingBox.Width, m_toobar_height + (lyricHeight - boundingBox.Height) / 2, boundingBox.Width, boundingBox.Height);
+            break;
+        //居中
+        default:
+            dstRect = Gdiplus::RectF((m_nWidth - boundingBox.Width) / 2, m_toobar_height + (lyricHeight - boundingBox.Height) / 2, boundingBox.Width, boundingBox.Height);
+        }
+    }
 	else
 	{
 		Gdiplus::RectF transBoundingBox;
 		pGraphics->MeasureString(m_strTranslate, -1, m_pFont, layoutRect, m_pTextFormat, &transBoundingBox, 0, 0);
-		Gdiplus::REAL translateHeight = transBoundingBox.Height * TRANSLATE_FONT_SIZE_FACTOR;
+        transBoundingBox.Width += 1;     //测量到的文本宽度加1，以防止出现使用某些字体时，最后一个字符无法显示的问题
+        Gdiplus::REAL translateHeight = transBoundingBox.Height * TRANSLATE_FONT_SIZE_FACTOR;
 		Gdiplus::REAL translateWidth = transBoundingBox.Width * TRANSLATE_FONT_SIZE_FACTOR;
 		Gdiplus::REAL gapHeight = boundingBox.Height * 0.2f;	//歌词和翻译之间的间隙
 		Gdiplus::REAL height = boundingBox.Height + gapHeight + translateHeight;
-		dstRect = Gdiplus::RectF((m_nWidth - boundingBox.Width) / 2, m_toobar_height + (lyricHeight - height) / 2, boundingBox.Width, boundingBox.Height);
-		transRect = Gdiplus::RectF((m_nWidth - translateWidth) / 2, dstRect.GetBottom() + gapHeight, translateWidth, translateHeight);
+        switch (m_alignment)
+        {
+        case Alignment::LEFT:
+            dstRect = Gdiplus::RectF(0, m_toobar_height + (lyricHeight - height) / 2, boundingBox.Width, boundingBox.Height);
+            transRect = Gdiplus::RectF(0, dstRect.GetBottom() + gapHeight, translateWidth, translateHeight);
+            break;
+        case Alignment::RIGHT:
+            dstRect = Gdiplus::RectF((m_nWidth - boundingBox.Width), m_toobar_height + (lyricHeight - height) / 2, boundingBox.Width, boundingBox.Height);
+            transRect = Gdiplus::RectF((m_nWidth - translateWidth), dstRect.GetBottom() + gapHeight, translateWidth, translateHeight);
+            break;
+        default:
+		    dstRect = Gdiplus::RectF((m_nWidth - boundingBox.Width) / 2, m_toobar_height + (lyricHeight - height) / 2, boundingBox.Width, boundingBox.Height);
+		    transRect = Gdiplus::RectF((m_nWidth - translateWidth) / 2, dstRect.GetBottom() + gapHeight, translateWidth, translateHeight);
+            break;
+        }
 	}
 
-	DrawLyricText(pGraphics, m_lpszLyrics, dstRect, true);
+	DrawLyricText(pGraphics, m_lpszLyrics, dstRect, m_lyric_karaoke_disp);
 	if (bDrawTranslate)
 		DrawLyricText(pGraphics, m_strTranslate, transRect, false, true);
 }
@@ -496,8 +522,8 @@ void CLyricsWindow::SetLyricsFont(const WCHAR * familyName, Gdiplus::REAL emSize
 	m_FontSize=m_pFont->GetSize ();
 	m_FontStyle=m_pFont->GetStyle ();
 
-	
-	
+
+
 }
 
 void CLyricsWindow::SetLyricDoubleLine(bool doubleLine)
@@ -530,6 +556,16 @@ void CLyricsWindow::SetLyricChangeFlag(bool bFlag)
     m_lyricChangeFlag = bFlag;
 }
 
+void CLyricsWindow::SetAlignment(Alignment alignment)
+{
+	m_alignment = alignment;
+}
+
+void CLyricsWindow::SetLyricKaraokeDisplay(bool karaoke_disp)
+{
+    m_lyric_karaoke_disp = karaoke_disp;
+}
+
 void CLyricsWindow::OnLButtonDown(UINT nFlags, CPoint point)
 {
 
@@ -537,4 +573,3 @@ void CLyricsWindow::OnLButtonDown(UINT nFlags, CPoint point)
 	//ReleaseCapture();
 	//SendMessage(WM_NCLBUTTONDOWN,HTCAPTION,NULL);
 }
-

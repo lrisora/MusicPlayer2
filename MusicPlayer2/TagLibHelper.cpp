@@ -44,6 +44,7 @@ using namespace TagLib;
 
 #define STR_ID3V2_RATEING_TAG "POPM"
 #define STR_FLAC_RATING_TAG "RATING"
+//#define STR_WMA_RATING_TAG "RATING WMP"
 
 //将taglib中的字符串转换成wstring类型。
 //由于taglib将所有非unicode编码全部作为Latin编码处理，因此无法正确处理本地代码页
@@ -1518,6 +1519,19 @@ int CTagLibHelper::GetFlacRating(const wstring& file_path)
 
 }
 
+int CTagLibHelper::GetWmaRating(const wstring& file_path)
+{
+    int rate{};
+    ASF::File file(file_path.c_str());
+    if (file.isValid())
+    {
+        ASF::Tag* tag = file.tag();
+        auto rating_str = tag->rating();
+        rate = _wtoi(rating_str.toWString().c_str());
+    }
+    return rate;
+}
+
 bool CTagLibHelper::WriteMpegRating(const wstring& file_path, int rate)
 {
     MPEG::File file(file_path.c_str());
@@ -1528,6 +1542,34 @@ bool CTagLibHelper::WriteMpegRating(const wstring& file_path, int rate)
         tags |= MPEG::File::APE;
     bool saved = file.save(tags, File::StripOthers, GetWriteId3v2Version());
     return saved;
+}
+
+bool CTagLibHelper::WriteFlacRating(const wstring& file_path, int rate)
+{
+    FLAC::File file(file_path.c_str());
+    if (file.isValid())
+    {
+        auto properties = file.properties();
+        properties[STR_FLAC_RATING_TAG].clear();
+        properties[STR_FLAC_RATING_TAG].append(std::to_wstring(rate).c_str());
+        file.setProperties(properties);
+        bool saved = file.save();
+        return saved;
+    }
+    return false;
+}
+
+bool CTagLibHelper::WriteWmaRating(const wstring& file_path, int rate)
+{
+    ASF::File file(file_path.c_str());
+    if (file.isValid())
+    {
+        auto tag = file.tag();
+        tag->setRating(std::to_wstring(rate));
+        bool saved = file.save();
+        return saved;
+    }
+    return false;
 }
 
 TagLib::ID3v2::Version CTagLibHelper::GetWriteId3v2Version()

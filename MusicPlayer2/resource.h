@@ -668,10 +668,15 @@
 #define IDS_RESTORE                     536
 #define IDI_MINIMIZE_D                  536
 #define IDI_MAXIMIZE                    537
+#define IDS_SET_FILENAME_FORM           537
 #define IDI_MAXIMIZE_D                  538
+#define IDS_SET_MULTI_OUT_ALBUM_COVER_FILE_NAME 538
 #define IDI_RESTORE                     539
+#define IDS_DARK                        539
 #define IDI_ICON19                      540
 #define IDI_RESTORE_D                   540
+#define IDS_LIGHT                       540
+#define IDS_SHOW_HIDE_PLAYER            541
 #define IDC_STATIC_PATH                 1001
 #define IDC_LIST1                       1002
 #define IDC_PATH_LIST                   1002
@@ -728,6 +733,7 @@
 #define IDC_COMMENT_BUTTON              1018
 #define IDC_PATH_EDIT                   1019
 #define IDC_FIND_INFO_STATIC            1019
+#define IDC_ORIGINAL_BUTTON             1019
 #define IDC_PATH_STATIC                 1020
 #define IDC_OPTIONS_TAB                 1024
 #define IDC_CHECK1                      1025
@@ -773,6 +779,7 @@
 #define IDC_DOWNLOAD_WHEN_TAG_FULL_CHECK 1028
 #define IDC_ARTIST_CHECK                1028
 #define IDC_SHOW_NEXT_CHECK             1028
+#define IDC_CONTINUE_WHEN_SWITCH_PLAYLIST_CHECK 1028
 #define IDC_LYRIC_PATH_EDIT             1029
 #define IDC_BITRATE_CHECK               1029
 #define IDC_SHOW_NEXT_CHECK2            1029
@@ -945,6 +952,7 @@
 #define IDC_OUT_FORMAT_COMBO            1110
 #define IDC_OUT_DIR_EDIT                1111
 #define IDC_CBR_RADIO                   1112
+#define IDC_OUT_NAME_EDIT               1112
 #define IDC_ABR_RADIO                   1113
 #define IDC_CBR_RADIO2                  1113
 #define IDC_VBR_RADIO                   1114
@@ -969,6 +977,7 @@
 #define IDC_SHOW_DESKTOP_LYRIC          1126
 #define IDC_CLEAN_NOT_EXIST_CHECK       1126
 #define IDC_AUTO_RUN_CHECK              1126
+#define IDC_DISABLE_DELETE_FROM_DISK_CHECK 1126
 #define IDC_RECORDE_INPUT_COMBO         1127
 #define IDC_CLEAN_NOT_IN_MEDIA_LIB_DIR_CHECK 1127
 #define IDC_OUTPUT_DEVICE_COMBO         1128
@@ -1018,6 +1027,8 @@
 #define IDC_LYRIC_FILE_STATIC           1166
 #define IDC_ALIGNMENT_COMBO2            1166
 #define IDC_PLAYLIST_DISPLAY_MODE_OMBO  1167
+#define IDC_ALIGNMENT_COMBO3            1167
+#define IDC_DESKTOP_LYRIC_ALIGNMENT_COMBO 1167
 #define IDC_RECENT_PLAYED_RANGE_OMBO    1168
 #define IDC_DEFAULT_ALBUM_COVER_HQ      1168
 #define IDC_UI_INTERVAL_EDIT            1169
@@ -1027,6 +1038,7 @@
 #define IDC_PREVIEW_STATIC              1173
 #define IDC_CHECK7                      1174
 #define IDC_NOTIFY_ICON_AUTO_ADAPT_CHECK 1174
+#define IDC_SHOW_PLAYLIST_TOOLTIP_CHECK 1174
 #define IDC_CHECK8                      1175
 #define IDC_BTN_ROUND_CORNERS_CHECK     1175
 #define IDC_UI_STATIC                   1176
@@ -1038,6 +1050,8 @@
 #define IDC_INSERT_RADIO                1183
 #define IDC_USE_DESKTOP_BACKGROUND_CHECK 1184
 #define IDC_ID3V2_TYPE_COMBO            1185
+#define IDC_GITHUB_RADIO                1186
+#define IDC_GITEE_RADIO                 1187
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_OPEN                         32773
@@ -1454,14 +1468,17 @@
 #define ID_RATING_NONE                  33337
 #define ID_33338                        33338
 #define ID_USE_STANDARD_TITLE_BAR       33339
+#define ID_PLAYLIST_VIEW_ARTIST         33340
+#define ID_PLAYLIST_VIEW_ALBUM          33341
+#define ID_PLAYLIST_SELECT_CHANGE       33342
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        541
-#define _APS_NEXT_COMMAND_VALUE         33340
-#define _APS_NEXT_CONTROL_VALUE         1186
+#define _APS_NEXT_RESOURCE_VALUE        540
+#define _APS_NEXT_COMMAND_VALUE         33343
+#define _APS_NEXT_CONTROL_VALUE         1187
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
