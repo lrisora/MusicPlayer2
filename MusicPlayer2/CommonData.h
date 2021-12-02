@@ -463,6 +463,10 @@ struct IconSet
     IconRes lyric_forward;
     IconRes lyric_delay;
     IconRes recent_songs;
+    IconRes volume1;
+    IconRes volume2;
+    IconRes volume3;
+    IconRes volume0;
 
     IconRes stop_l;
     IconRes previous_l;

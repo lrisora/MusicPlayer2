@@ -14,7 +14,10 @@ enum AudioInfoFlag
 {
     AF_LENGTH = 1,
     AF_BITRATE = 2,
-    AF_TAG_INFO = 4
+    AF_TAG_INFO = 4,
+    AF_CHANNEL_INFO = 8,
+
+    AF_ALL = AF_LENGTH | AF_BITRATE | AF_TAG_INFO | AF_CHANNEL_INFO
 };
 
 enum PlayerCoreType
@@ -54,6 +57,7 @@ public:
     virtual void Stop() = 0;
     virtual void SetVolume(int volume) = 0;
     virtual void SetSpeed(float speed) = 0;         //设置播放速度（1为原速）
+    virtual bool SongIsOver() = 0;                  //曲目是否播放完毕
 
     virtual int GetCurPosition() = 0;
     virtual int GetSongLength() = 0;

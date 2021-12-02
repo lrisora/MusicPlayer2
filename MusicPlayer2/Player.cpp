@@ -7,6 +7,7 @@
 #include "MciCore.h"
 #include "MusicPlayerCmdHelper.h"
 #include "SongDataManager.h"
+#include "SongInfoHelper.h"
 
 CPlayer CPlayer::m_instance;
 
@@ -148,20 +149,29 @@ UINT CPlayer::IniPlaylistThreadFunc(LPVOID lpParam)
 	int song_num = GetInstance().m_playlist.size();
 	for (int i{}; i < song_num; i++)
 	{
+        SongInfo& song{ GetInstance().m_playlist[i] };
+        if (song.file_path.empty())
+            continue;
+        wstring file_path{ song.file_path };
+        SongInfo song_info{ CSongDataManager::GetInstance().GetSongInfo(song.file_path) };
 		pInfo->process_percent = i * 100 / song_num + 1;
 
 		//获取cue音轨的信息
-		if (GetInstance().m_playlist[i].is_cue)
+		if (song.is_cue)
 		{
 			if (pInfo->refresh_info)
 			{
 				auto& song{ GetInstance().m_playlist[i] };
 				static SongInfo last_song;
-				if (last_song.file_path != song.file_path)
-					GetInstance().GetPlayerCore()->GetAudioInfo(song.file_path.c_str(), song, AF_BITRATE);  //获取比特率，如果上次获取到的是同一个文件中的音轨，则不再从文件获取比特率
-				else
-					song.bitrate = last_song.bitrate;
-				last_song = song;
+                if (last_song.file_path != song.file_path)
+                {
+                    GetInstance().GetPlayerCore()->GetAudioInfo(song.file_path.c_str(), song, AF_BITRATE | AF_CHANNEL_INFO);  //获取比特率，如果上次获取到的是同一个文件中的音轨，则不再从文件获取比特率
+                }
+                else
+                {
+                    CSongInfoHelper::SetSongChannelInfo(song, CSongInfoHelper::GetSongChannelInfo(last_song));
+                }
+                last_song = song;
 				if (song.end_pos == 0)   //如果没有获取到cue音轨的结束时间，则将整轨的长度作为结束时间
 				{
 					GetInstance().GetPlayerCore()->GetAudioInfo(song.file_path.c_str(), song, AF_BITRATE | AF_LENGTH);
@@ -173,38 +183,32 @@ UINT CPlayer::IniPlaylistThreadFunc(LPVOID lpParam)
 			continue;
 		}
 
-		CSongDataManager::GetInstance().UpdateFileModifiedTime(GetInstance().m_playlist[i].file_path, pInfo->refresh_info);
-		if (!pInfo->refresh_info)
-		{
-			//wstring file_name{ GetInstance().m_playlist[i].file_name };
-			if (GetInstance().m_playlist[i].file_path.empty())
-				continue;
-			if (CSongDataManager::GetInstance().IsItemExist(GetInstance().m_playlist[i].file_path))		//如果歌曲信息容器中已经包含该歌曲，则不需要再获取歌曲信息
-			{
-				GetInstance().m_playlist[i].CopySongInfo(CSongDataManager::GetInstance().GetSongInfo(GetInstance().m_playlist[i].file_path));
-				//GetInstance().m_playlist[i] = iter->second;
-				//GetInstance().m_playlist[i].file_name = file_name;
-				//GetInstance().m_playlist[i].file_path = iter->first;
-				continue;
-			}
-		}
-		wstring file_path{ GetInstance().m_playlist[i].file_path };
-		bool is_osu_file{ COSUPlayerHelper::IsOsuFile(file_path) };
-		int flag = AF_LENGTH | AF_BITRATE;
-		if (!is_osu_file)
-			flag |= AF_TAG_INFO;
-		GetInstance().GetPlayerCore()->GetAudioInfo(file_path.c_str(), GetInstance().m_playlist[i], flag);
-		if (is_osu_file)
-		{
-			COSUPlayerHelper::GetOSUAudioTitleArtist(GetInstance().m_playlist[i]);
-		}
-		CSongDataManager::GetInstance().SaveSongInfo(GetInstance().m_playlist[i]);
-		//获取分级信息
-		SongInfo song_info = CSongDataManager::GetInstance().GetSongInfo(file_path);
-		CAudioTag audio_tag(song_info);
-		audio_tag.GetAudioRating();
-		CSongDataManager::GetInstance().SaveSongInfo(song_info);
-		CSongDataManager::GetInstance().SetSongDataModified();
+		CSongDataManager::GetInstance().UpdateFileModifiedTime(song.file_path, pInfo->refresh_info);
+
+        //从CSongDataManager获取歌曲信息
+        song.CopySongInfo(CSongDataManager::GetInstance().GetSongInfo(song.file_path));
+
+        //如果要求强制刷新或没有获取过歌曲信息，则在这里获取
+        if (pInfo->refresh_info || !song_info.ChannelInfoAcquired() || !CSongDataManager::GetInstance().IsItemExist(song.file_path))
+        {
+            bool is_osu_file{ COSUPlayerHelper::IsOsuFile(file_path) };
+            int flag = AF_LENGTH | AF_BITRATE | AF_CHANNEL_INFO;
+            if (!is_osu_file && !CSongDataManager::GetInstance().IsItemExist(song.file_path))
+                flag |= AF_TAG_INFO;
+            if (pInfo->refresh_info)
+                flag = AF_ALL;
+            GetInstance().GetPlayerCore()->GetAudioInfo(file_path.c_str(), song, flag);
+            if (is_osu_file)
+            {
+                COSUPlayerHelper::GetOSUAudioTitleArtist(song);
+            }
+            CSongDataManager::GetInstance().GetSongInfoRef(song.file_path).SetChannelInfoAcquired(true);
+            //获取分级信息
+            CAudioTag audio_tag(song);
+            audio_tag.GetAudioRating();
+            CSongDataManager::GetInstance().SaveSongInfo(song);
+            CSongDataManager::GetInstance().SetSongDataModified();
+        }
 	}
 	GetInstance().m_loading = false;
 	//GetInstance().IniPlaylistComplate();
@@ -573,30 +577,32 @@ bool CPlayer::SongIsOver() const
 	}
 	else
 	{
-		bool song_is_over{ false };
-		static int last_pos;
-		if ((m_playing == PS_PLAYING && m_current_position.toInt() == last_pos && m_current_position.toInt() != 0	//如果正在播放且当前播放的位置没有发生变化且当前播放位置不为0，
-			&& m_current_position.toInt() > m_song_length.toInt() - 1000)		//且播放进度到了最后1秒
-			|| m_error_code == BASS_ERROR_ENDED)	//或者出现BASS_ERROR_ENDED错误，则判断当前歌曲播放完了
-		//有时候会出现识别的歌曲长度超过实际歌曲长度的问题，这样会导致歌曲播放进度超过实际歌曲结尾时会出现BASS_ERROR_ENDED错误，
-		//检测到这个错误时直接判断歌曲已经播放完了。
-			song_is_over = true;
+        return m_pCore->SongIsOver();
 
-		//static int progress_no_change_cnt{};
-		//if (m_current_position.toInt() == last_pos)
-		//    progress_no_change_cnt++;
-		//else
-		//    progress_no_change_cnt = 0;
+        //bool song_is_over{ false };
+        //static int last_pos;
+        //if ((m_playing == PS_PLAYING && m_current_position.toInt() == last_pos && m_current_position.toInt() != 0	//如果正在播放且当前播放的位置没有发生变化且当前播放位置不为0，
+        //    && m_current_position.toInt() > m_song_length.toInt() - 1000)		//且播放进度到了最后1秒
+        //    || m_error_code == BASS_ERROR_ENDED)	//或者出现BASS_ERROR_ENDED错误，则判断当前歌曲播放完了
+        ////有时候会出现识别的歌曲长度超过实际歌曲长度的问题，这样会导致歌曲播放进度超过实际歌曲结尾时会出现BASS_ERROR_ENDED错误，
+        ////检测到这个错误时直接判断歌曲已经播放完了。
+        //    song_is_over = true;
 
-		//if (m_playing == 2 && progress_no_change_cnt > 10)       //如果正在播放而且播放进度连续指定次数都没有变化，也判断歌曲播放完了。
-		//    song_is_over = true;
+        ////static int progress_no_change_cnt{};
+        ////if (m_current_position.toInt() == last_pos)
+        ////    progress_no_change_cnt++;
+        ////else
+        ////    progress_no_change_cnt = 0;
 
-		last_pos = m_current_position.toInt();
-		return song_is_over;
-		//这里本来直接使用return current_position_int>=m_song_length_int来判断歌曲播放完了，
-		//但是BASS音频库在播放时可能会出现当前播放位置一直无法到达歌曲长度位置的问题，
-		//这样函数就会一直返回false。
-	}
+        ////if (m_playing == 2 && progress_no_change_cnt > 10)       //如果正在播放而且播放进度连续指定次数都没有变化，也判断歌曲播放完了。
+        ////    song_is_over = true;
+
+        //last_pos = m_current_position.toInt();
+        //return song_is_over;
+        ////这里本来直接使用return current_position_int>=m_song_length_int来判断歌曲播放完了，
+        ////但是BASS音频库在播放时可能会出现当前播放位置一直无法到达歌曲长度位置的问题，
+        ////这样函数就会一直返回false。
+    }
 }
 
 void CPlayer::GetPlayerCoreSongLength()
@@ -623,6 +629,7 @@ void CPlayer::SetVolume()
 	volume = volume * theApp.m_nc_setting_data.volume_map / 100;
 	m_pCore->SetVolume(volume);
 	GetPlayerCoreError(L"SetVolume");
+    SendMessage(theApp.m_pMainWnd->m_hWnd, WM_VOLUME_CHANGED, 0, 0);
 }
 
 
@@ -1459,7 +1466,15 @@ bool CPlayer::AlbumCoverExist()
 bool CPlayer::DeleteAlbumCover()
 {
     bool result{ true };
-	if (!m_inner_cover)
+    //内嵌专辑封面，从音频文件中删除
+    if (m_inner_cover)
+    {
+        ReOpen reopen(true);
+        CAudioTag audio_tag(GetCurrentSongInfo2());
+        result = audio_tag.WriteAlbumCover(wstring());
+    }
+    //外部专辑封面，删除专辑封面文件
+    else
 	{
         if (CCommon::DeleteAFile(theApp.m_pMainWnd->GetSafeHwnd(), m_album_cover_path.c_str()) == 0)
             m_album_cover.Destroy();

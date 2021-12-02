@@ -38,7 +38,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -53,7 +53,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -249,6 +249,7 @@
     <ClInclude Include="IPropertyTabDlg.h" />
     <ClInclude Include="LyricRelateDlg.h" />
     <ClInclude Include="CPlayerUI3.h" />
+    <ClInclude Include="MediaLibStatisticsDlg.h" />
     <ClInclude Include="PropertyAdvancedDlg.h" />
     <ClInclude Include="PropertyAlbumCoverDlg.h" />
     <ClInclude Include="PropertyDlg.h" />
@@ -257,6 +258,7 @@
     <ClInclude Include="SelectItemDlg.h" />
     <ClInclude Include="SliderCtrlEx.h" />
     <ClInclude Include="SongDataManager.h" />
+    <ClInclude Include="SongInfoHelper.h" />
     <ClInclude Include="SpectralDataHelper.h" />
     <ClInclude Include="SpinEdit.h" />
     <ClInclude Include="TagFromFileNameDlg.h" />
@@ -391,6 +393,7 @@
     <ClCompile Include="GetTagOnlineDlg.cpp" />
     <ClCompile Include="LyricRelateDlg.cpp" />
     <ClCompile Include="CPlayerUI3.cpp" />
+    <ClCompile Include="MediaLibStatisticsDlg.cpp" />
     <ClCompile Include="PropertyAdvancedDlg.cpp" />
     <ClCompile Include="PropertyAlbumCoverDlg.cpp" />
     <ClCompile Include="PropertyDlg.cpp" />
@@ -399,6 +402,7 @@
     <ClCompile Include="SelectItemDlg.cpp" />
     <ClCompile Include="SliderCtrlEx.cpp" />
     <ClCompile Include="SongDataManager.cpp" />
+    <ClCompile Include="SongInfoHelper.cpp" />
     <ClCompile Include="SpectralDataHelper.cpp" />
     <ClCompile Include="SpinEdit.cpp" />
     <ClCompile Include="TagFromFileNameDlg.cpp" />
@@ -598,6 +602,14 @@
     <Image Include="res\stop_white.ico" />
     <Image Include="res\tag.ico" />
     <Image Include="res\toolbar1.bmp" />
+    <Image Include="res\volume0.ico" />
+    <Image Include="res\volume0_d.ico" />
+    <Image Include="res\volume1.ico" />
+    <Image Include="res\volume1_d.ico" />
+    <Image Include="res\volume2.ico" />
+    <Image Include="res\volume2_d.ico" />
+    <Image Include="res\volume3.ico" />
+    <Image Include="res\volume3_d.ico" />
     <Image Include="res\year_d.ico" />
     <Image Include="res\上一曲.ico" />
     <Image Include="res\下一曲.ico" />

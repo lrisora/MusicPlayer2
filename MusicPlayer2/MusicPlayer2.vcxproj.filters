@@ -345,6 +345,12 @@
     <Filter Include="对话框类\EditStringListDlg">
       <UniqueIdentifier>{3db917ae-2514-43e2-b7fb-bc610997c8c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="公共的类\SongInfoHelper">
+      <UniqueIdentifier>{d090c8bc-5b8c-4c53-8a6d-ead72fa6bf10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="对话框类\媒体库对话框\MediaLibStatisticsDlg">
+      <UniqueIdentifier>{f6a899f1-4a37-421e-aea8-b27fb389c415}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -779,6 +785,12 @@
     <ClInclude Include="EditStringListDlg.h">
       <Filter>对话框类\EditStringListDlg</Filter>
     </ClInclude>
+    <ClInclude Include="SongInfoHelper.h">
+      <Filter>公共的类\SongInfoHelper</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaLibStatisticsDlg.h">
+      <Filter>对话框类\媒体库对话框\MediaLibStatisticsDlg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FindDlg.cpp">
@@ -1176,6 +1188,12 @@
     </ClCompile>
     <ClCompile Include="EditStringListDlg.cpp">
       <Filter>对话框类\EditStringListDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="SongInfoHelper.cpp">
+      <Filter>公共的类\SongInfoHelper</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaLibStatisticsDlg.cpp">
+      <Filter>对话框类\媒体库对话框\MediaLibStatisticsDlg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1581,6 +1599,30 @@
       <Filter>资源文件\Icons</Filter>
     </Image>
     <Image Include="res\star.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume0.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume0_d.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume1.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume1_d.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume2.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume2_d.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume3.ico">
+      <Filter>资源文件\Icons</Filter>
+    </Image>
+    <Image Include="res\volume3_d.ico">
       <Filter>资源文件\Icons</Filter>
     </Image>
   </ItemGroup>

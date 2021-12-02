@@ -272,6 +272,15 @@ void CBassCore::GetBASSAudioInfo(HSTREAM hStream, SongInfo & song_info, int flag
         BASS_ChannelGetAttribute(hStream, BASS_ATTRIB_BITRATE, &bitrate);
         song_info.bitrate = static_cast<int>(bitrate + 0.5f);
     }
+    //获取采样频率、通道数、位深度
+    if (flag & AF_CHANNEL_INFO)
+    {
+        BASS_CHANNELINFO info{};
+        BASS_ChannelGetInfo(hStream, &info);
+        song_info.freq = info.freq;
+        song_info.bits = info.origres;
+        song_info.channels = info.chans;
+    }
     if(flag&AF_TAG_INFO)
     {
         CAudioTag audio_tag(song_info, hStream);
@@ -308,6 +317,7 @@ void CBassCore::Open(const wchar_t * file_path)
 {
     CSingleLock sync(&m_critical, TRUE);
 
+    m_last_playing_state = PLAYING_STATE_DEFAULT_VALUE;
     if (m_musicStream != 0)     //打开前如果音频句柄没有关闭，先将其关闭，确保同时只能打开一个音频文件
         Close();
 
@@ -355,6 +365,7 @@ void CBassCore::Close()
 
 void CBassCore::Play()
 {
+    m_playing_state = PS_PLAYING;
     if (theApp.m_play_setting_data.fade_effect && theApp.m_play_setting_data.fade_time > 0)     //如果设置了播放时音量淡入淡出
     {
         KillTimer(theApp.m_pMainWnd->GetSafeHwnd(), FADE_TIMER_ID);
@@ -376,6 +387,7 @@ void CBassCore::Play()
 
 void CBassCore::Pause()
 {
+    m_playing_state = PS_PAUSED;
     if (theApp.m_play_setting_data.fade_effect && theApp.m_play_setting_data.fade_time > 0)     //如果设置了播放时音量淡入淡出
     {
         BASS_ChannelSlideAttribute(m_musicStream, BASS_ATTRIB_VOL, 0, theApp.m_play_setting_data.fade_time);        //音量渐变到0
@@ -395,6 +407,7 @@ void CBassCore::Pause()
 
 void CBassCore::Stop()
 {
+    m_playing_state = PS_STOPED;
     DWORD playing_state = BASS_ChannelIsActive(m_musicStream);
     if (theApp.m_play_setting_data.fade_effect && theApp.m_play_setting_data.fade_time > 0 && playing_state == BASS_ACTIVE_PLAYING)
     {
@@ -430,6 +443,15 @@ void CBassCore::SetSpeed(float speed)
     BASS_ChannelSetAttribute(m_musicStream, BASS_ATTRIB_FREQ, freq);
 }
 
+bool CBassCore::SongIsOver()
+{
+    DWORD state = BASS_ChannelIsActive(m_musicStream);
+    bool is_over{ (m_last_playing_state == BASS_ACTIVE_PLAYING && state == BASS_ACTIVE_STOPPED)
+        || m_error_code == BASS_ERROR_ENDED };
+    m_last_playing_state = state;
+    return is_over && m_playing_state == PS_PLAYING && m_musicStream != 0;
+}
+
 int CBassCore::GetCurPosition()
 {
     CSingleLock sync(&m_critical, TRUE);
@@ -454,7 +476,7 @@ int CBassCore::GetSongLength()
     double length_sec;
     length_sec = BASS_ChannelBytes2Seconds(m_musicStream, lenght_bytes);
     int song_length = static_cast<int>(length_sec * 1000);
-    if (song_length == -1000) song_length = 0;
+    if (song_length <= -1000) song_length = 0;
     return song_length;
 }
 
@@ -563,7 +585,8 @@ void CBassCore::GetFFTData(float fft_data[FFT_SAMPLE])
 
 int CBassCore::GetErrorCode()
 {
-    return BASS_ErrorGetCode();
+    m_error_code = BASS_ErrorGetCode();
+    return m_error_code;
 }
 
 std::wstring CBassCore::GetErrorInfo(int error_code)
@@ -606,7 +629,7 @@ Time CBassCore::GetBASSSongLength(HSTREAM hStream)
     double length_sec;
     length_sec = BASS_ChannelBytes2Seconds(hStream, lenght_bytes);
     int song_length_int = static_cast<int>(length_sec * 1000);
-    if (song_length_int == -1000) song_length_int = 0;
+    if (song_length_int <= -1000) song_length_int = 0;
     return Time(song_length_int);		//将长度转换成Time结构
 }
 
