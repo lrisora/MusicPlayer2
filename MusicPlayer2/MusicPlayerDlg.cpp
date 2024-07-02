@@ -1095,6 +1095,7 @@ void CMusicPlayerDlg::TaskBarSetClipArea(CRect rect)
 void CMusicPlayerDlg::EnablePlaylist(bool enable)
 {
     m_playlist_list.EnableWindow(enable);
+    m_playlist_list.Invalidate();
     m_search_edit.EnableWindow(enable);
     //m_clear_search_button.EnableWindow(enable);
     m_media_lib_button.EnableWindow(enable);

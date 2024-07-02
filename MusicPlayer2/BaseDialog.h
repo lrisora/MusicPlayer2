@@ -30,6 +30,9 @@ private:
     CSize m_window_size{ -1, -1 };
     CBrush m_brBkgr;    // 在CDialogEx是保护，我改成了私有，我想集中在CBaseDialog处理，如果有需求可以改回去
     CDC* m_pDC = nullptr;                               // InitializeControls期间有效，用于测量文本长度
+#ifdef COMPILE_FOR_WINE
+    CFont m_font;
+#endif
 
     static std::map<CString, HWND> m_unique_hwnd;        //针对每一个派生类的唯一的窗口句柄
 

@@ -135,6 +135,9 @@ HBITMAP MenuMgr::GetMenuBitmapHandle(IconMgr::IconType icon_type)
 
 const CBitmap* MenuMgr::GetMenuBitmap(IconMgr::IconType icon_type)
 {
+#ifdef COMPILE_FOR_WINE
+    return nullptr;    // 禁用菜单图标
+#endif
     if (icon_type == IconMgr::IconType::IT_NO_ICON)
         return nullptr;
 

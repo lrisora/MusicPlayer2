@@ -286,7 +286,13 @@ BOOL CBaseDialog::OnInitDialog()
     // 通用窗口/控件初始化操作
 
     // 设置窗口字体
+#ifdef COMPILE_FOR_WINE
+    // Wine中窗口关闭后好像总是会损坏这里引用的逻辑字体，用独立的逻辑字体就是正常的
+    UIFont::CreateFontSimple(m_font, 9, theApp.m_str_table.GetDefaultFontName().c_str());
+    CCommon::SetDialogFont(this, &m_font);
+#else
     CCommon::SetDialogFont(this, &theApp.m_font_set.dlg.GetFont());
+#endif
     //为按钮添加图标
     SetButtonIcon(IDCANCEL, IconMgr::IconType::IT_Cancel);
     SetButtonIcon(IDOK, IconMgr::IconType::IT_Ok);
